@@ -28,6 +28,14 @@
           </div>
 
           <button 
+            v-if="game.state.roomCode"
+            @click="shareKakaoRoom"
+            class="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1.5 transition-all shadow-lg active:scale-95"
+          >
+            <span>💬 카카오톡 초대</span>
+          </button>
+
+          <button 
             v-if="game.state.status !== 'menu'"
             @click="game.backToMenu"
             class="px-4 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold transition-all shadow-md active:scale-95"
@@ -155,7 +163,15 @@
         </div>
 
         <div class="w-full bg-slate-900/90 p-6 rounded-3xl border border-slate-800 shadow-2xl space-y-4 backdrop-blur-2xl">
-          <h3 class="font-bold text-sm text-slate-300">참여 플레이어 목록 ({{ game.state.players.length }}/4)</h3>
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-sm text-slate-300">참여 플레이어 목록 ({{ game.state.players.length }}/4)</h3>
+            <button 
+              @click="shareKakaoRoom" 
+              class="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1 shadow-md transition-all active:scale-95"
+            >
+              💬 카톡 초댓장 보내기
+            </button>
+          </div>
           
           <div class="space-y-2">
             <div 
@@ -251,10 +267,60 @@ import { useGame } from './composables/useGame'
 import Arena3D from './components/Arena3D.vue'
 import PlayerDashboard from './components/PlayerDashboard.vue'
 
+const KAKAO_JS_KEY = '5ac84d10d03c1b82c2bf07812a509c1b'
+
 const game = useGame()
 const activeTab = ref<'online' | 'local' | 'ai'>('online')
 const playerName = ref('플레이어 1')
 const inputRoomCode = ref('')
+
+const initKakao = () => {
+  if ((window as any).Kakao && !(window as any).Kakao.isInitialized()) {
+    (window as any).Kakao.init(KAKAO_JS_KEY)
+  }
+}
+
+const shareKakaoRoom = () => {
+  initKakao()
+  const roomCode = game.state.roomCode || 'STRIKE-LOBBY'
+  const shareUrl = `http://yeardayhour.duckdns.org/strike/`
+
+  if ((window as any).Kakao && (window as any).Kakao.isInitialized()) {
+    try {
+      (window as any).Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: '🎲 Strike 3D - 주사위 멀티플레이어 초대',
+          description: `[방 코드: ${roomCode}] 주사위와 운으로 승부하는 실시간 보드게임으로 초대합니다! 지금 들어오세요!`,
+          imageUrl: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=600&auto=format&fit=crop&q=80',
+          link: {
+            mobileWebUrl: shareUrl,
+            webUrl: shareUrl,
+          },
+        },
+        buttons: [
+          {
+            title: '🎲 게임 방 입장하기',
+            link: {
+              mobileWebUrl: shareUrl,
+              webUrl: shareUrl,
+            },
+          },
+        ],
+      })
+    } catch (e) {
+      console.error(e)
+      copyRoomFallback(roomCode, shareUrl)
+    }
+  } else {
+    copyRoomFallback(roomCode, shareUrl)
+  }
+}
+
+const copyRoomFallback = (roomCode: string, shareUrl: string) => {
+  navigator.clipboard.writeText(`[Strike 3D 방 초대] 방 코드: ${roomCode}\n접속: ${shareUrl}`)
+  alert(`방 초대 링크와 코드(${roomCode})가 클립보드에 복사되었습니다!`)
+}
 
 const handleCreateRoom = () => {
   if (!playerName.value.trim()) return alert('닉네임을 입력해주세요.')
@@ -270,7 +336,7 @@ const handleJoinRoom = () => {
 
 <style scoped>
 .btn-action {
-  @apply py-3.5 px-6 rounded-xl font-extrabold text-sm transition-all transform active:scale-95 flex items-center justify-center shadow-lg;
+  @apply py-3.5 px-6 rounded-xl font-extrabold text-xs sm:text-sm transition-all transform active:scale-95 flex items-center justify-center shadow-lg;
 }
 
 .btn-mode {
