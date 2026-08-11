@@ -30,7 +30,7 @@
           <button 
             v-if="game.state.roomCode"
             @click="shareKakaoRoom"
-            class="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1.5 transition-all shadow-lg active:scale-95"
+            class="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1.5 transition-all shadow-lg active:scale-95 cursor-pointer"
           >
             <span>💬 카톡 방 초대하기</span>
           </button>
@@ -167,7 +167,7 @@
             <h3 class="font-bold text-sm text-slate-300">참여 플레이어 목록 ({{ game.state.players.length }}/4)</h3>
             <button 
               @click="shareKakaoRoom" 
-              class="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1 shadow-md transition-all active:scale-95"
+              class="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1 shadow-md transition-all active:scale-95 cursor-pointer"
             >
               💬 카톡 초댓장 보내기
             </button>
@@ -262,7 +262,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useGame } from './composables/useGame'
 import Arena3D from './components/Arena3D.vue'
 import PlayerDashboard from './components/PlayerDashboard.vue'
@@ -275,16 +275,23 @@ const playerName = ref('플레이어 1')
 const inputRoomCode = ref('')
 
 const initKakao = () => {
-  if ((window as any).Kakao && !(window as any).Kakao.isInitialized()) {
-    (window as any).Kakao.init(KAKAO_JS_KEY)
+  if ((window as any).Kakao) {
+    if (!(window as any).Kakao.isInitialized()) {
+      (window as any).Kakao.init(KAKAO_JS_KEY)
+      console.log('[Kakao SDK] Initialized successfully with key')
+    }
   }
 }
+
+onMounted(() => {
+  initKakao()
+})
 
 const shareKakaoRoom = () => {
   initKakao()
   const roomCode = game.state.roomCode || 'STRIKE-LOBBY'
-  const shareUrl = `${window.location.origin}/strike/`
-  const textContent = `[Strike 3D 방 초대]\n방 코드: ${roomCode}\n접속 주소: ${shareUrl}`
+  const targetUrl = 'http://yeardayhour.duckdns.org/strike/'
+  const textContent = `[Strike 3D 방 초대]\n방 코드: ${roomCode}\n접속 주소: ${targetUrl}`
 
   // Always copy invitation text to clipboard as primary/fallback guarantee
   try {
@@ -300,23 +307,26 @@ const shareKakaoRoom = () => {
           description: `[방 코드: ${roomCode}] 주사위와 운으로 승부하는 실시간 보드게임으로 초대합니다!`,
           imageUrl: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=600&auto=format&fit=crop&q=80',
           link: {
-            mobileWebUrl: shareUrl,
-            webUrl: shareUrl,
+            mobileWebUrl: targetUrl,
+            webUrl: targetUrl,
           },
         },
         buttons: [
           {
             title: '🎲 게임 방 입장하기',
             link: {
-              mobileWebUrl: shareUrl,
-              webUrl: shareUrl,
+              mobileWebUrl: targetUrl,
+              webUrl: targetUrl,
             },
           },
         ],
       })
+      alert(`[카카오톡 초대 전송]\n방 코드: ${roomCode}\n(클립보드에도 자동 복사되었습니다!)`)
       return
-    } catch (e) {
-      console.error(e)
+    } catch (e: any) {
+      console.error('[Kakao Share Error]', e)
+      alert(`[카카오톡 공유 연동 안내]\n카카오 디벨로퍼스 웹 도메인 추가 완료 후 카톡 창이 즉시 열립니다.\n\n현재 방 코드 (${roomCode})가 클립보드에 복사되었으니 카톡에 바로 붙여넣기(Ctrl+V)하세요!`)
+      return
     }
   }
 
