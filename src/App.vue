@@ -32,7 +32,7 @@
             @click="shareKakaoRoom"
             class="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1.5 transition-all shadow-lg active:scale-95"
           >
-            <span>💬 카카오톡 초대</span>
+            <span>💬 카톡 방 초대하기</span>
           </button>
 
           <button 
@@ -283,7 +283,13 @@ const initKakao = () => {
 const shareKakaoRoom = () => {
   initKakao()
   const roomCode = game.state.roomCode || 'STRIKE-LOBBY'
-  const shareUrl = `http://yeardayhour.duckdns.org/strike/`
+  const shareUrl = `${window.location.origin}/strike/`
+  const textContent = `[Strike 3D 방 초대]\n방 코드: ${roomCode}\n접속 주소: ${shareUrl}`
+
+  // Always copy invitation text to clipboard as primary/fallback guarantee
+  try {
+    navigator.clipboard.writeText(textContent)
+  } catch (e) {}
 
   if ((window as any).Kakao && (window as any).Kakao.isInitialized()) {
     try {
@@ -291,7 +297,7 @@ const shareKakaoRoom = () => {
         objectType: 'feed',
         content: {
           title: '🎲 Strike 3D - 주사위 멀티플레이어 초대',
-          description: `[방 코드: ${roomCode}] 주사위와 운으로 승부하는 실시간 보드게임으로 초대합니다! 지금 들어오세요!`,
+          description: `[방 코드: ${roomCode}] 주사위와 운으로 승부하는 실시간 보드게임으로 초대합니다!`,
           imageUrl: 'https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=600&auto=format&fit=crop&q=80',
           link: {
             mobileWebUrl: shareUrl,
@@ -308,18 +314,13 @@ const shareKakaoRoom = () => {
           },
         ],
       })
+      return
     } catch (e) {
       console.error(e)
-      copyRoomFallback(roomCode, shareUrl)
     }
-  } else {
-    copyRoomFallback(roomCode, shareUrl)
   }
-}
 
-const copyRoomFallback = (roomCode: string, shareUrl: string) => {
-  navigator.clipboard.writeText(`[Strike 3D 방 초대] 방 코드: ${roomCode}\n접속: ${shareUrl}`)
-  alert(`방 초대 링크와 코드(${roomCode})가 클립보드에 복사되었습니다!`)
+  alert(`[방 초대 링크 & 코드 복사 완료!]\n방 코드: ${roomCode}\n카카오톡 단톡방에 바로 붙여넣기(Ctrl+V)하세요!`)
 }
 
 const handleCreateRoom = () => {
