@@ -27,6 +27,14 @@
             방 코드: {{ game.state.roomCode }}
           </div>
 
+          <a 
+            href="/"
+            class="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-1.5 no-underline"
+            title="http://yeardayhour.duckdns.org/ 로 이동"
+          >
+            <span>🏠 메인 포털</span>
+          </a>
+
           <button 
             v-if="game.state.roomCode"
             @click="copyRoomInviteLink"
