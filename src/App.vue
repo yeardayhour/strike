@@ -29,10 +29,11 @@
 
           <a 
             href="/"
-            class="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-1.5 no-underline"
+            class="px-3.5 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-amber-300 border border-slate-700/80 hover:border-amber-400/50 text-xs font-mono font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 no-underline backdrop-blur-md"
             title="http://yeardayhour.duckdns.org/ 로 이동"
           >
-            <span>🏠 메인 포털</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>yeardayhour.duckdns.org</span>
           </a>
 
           <button 
